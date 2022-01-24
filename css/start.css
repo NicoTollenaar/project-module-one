@@ -1,0 +1,61 @@
+* {
+    padding: 0px;
+    margin: 0px;
+    box-sizing: border-box;
+    border: none;
+    /* outline: 1px solid red */
+}
+
+#background {
+    background-image: url("./../images/start-page-mountains.jpg");
+    background-size: contain;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+h1 {
+    margin: 200px auto 50px;
+    font-size: 5em;
+    color: darkolivegreen
+}
+
+p {
+    color: darkblue;
+    font-size: 4em;
+}
+
+.button-keys-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 30%;
+}
+
+a {
+    text-align: center;
+}
+
+/* .keys-container {
+   background-image: url("./../images/arrow-keys.jpg");
+   background-size: cover;
+   background-color: pink;
+   width: 20%;
+} */
+
+#start-button {
+    display: inline;
+    width: 15%;
+}
+
+#start-button-img {
+    display: inline-block;
+    width: 100%;
+}
+
+
+
+
