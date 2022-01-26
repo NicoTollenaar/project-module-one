@@ -3,39 +3,52 @@
     margin: 0px;
     box-sizing: border-box;
     border: none;
-    outline: none;
-    /* outline: 3px solid red; */
-    font-family: Arial, Helvetica, sans-serif;
+    /* outline: 1px solid red */
 }
 
-body {
+#background {
+    background-image: url("./../images/start-page-mountains.jpg");
+    background-size: contain;
     height: 100vh;
     width: 100vw;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: flex-start;
     align-items: center;
-    background-color: black;
-    border: 1px red solid;
 }
 
-.time-container {
+h1 {
+    margin: 200px auto 50px;
+    font-size: 5em;
+    color: darkolivegreen
+}
+
+p {
+    color: darkblue;
+    font-size: 4em;
+}
+
+.button-keys-container {
     display: flex;
-    justify-content: flex-end;
-    align-items: baseline;
-    margin: 10px 20px;
+    flex-direction: column;
+    justify-content: center;
+    height: 15%;
 }
 
-#time {
-    font-size: 1.5em;
-    margin: 5px;
+a {
+    text-align: center;
 }
+
+/* .keys-container {
+   background-image: url("./../images/arrow-keys.jpg");
+   background-size: cover;
+   background-color: pink;
+   width: 20%;
+} */
 
 #start-button {
+    display: inline;
     width: 15%;
-    position: relative;
-    left: 35%;
-    top: 30%;
-
 }
 
 #start-button-img {
@@ -43,96 +56,34 @@ body {
     width: 100%;
 }
 
-.frame {
-    /* outline: 2px red solid; */
-    height: 80vh;
-    width: 90vw;
-    position: relative;
-    background-image: url("./../images/game-background-two-mountains.jpg");
-    background-size: contain;
-    opacity: 0.7;
-}
-
-.player {
-    position: absolute;
-    text-align: center;
-    bottom:0;
-    left: 50%;
-    background-size: contain;
-    background-repeat: no-repeat;
-}
-
-.player img {
-    width: 100%;
-    height: 100%;
-}
-
-.frameObjectsLevel1 {
-    position: absolute;
-    outline: none;
-    background-color: brown;
-    opacity: 0.9;
-}
-
-.fatalObjectsLevel1 {
-    position: absolute;
-    outline: none;
-    background-color: blue;
-}
-
-.foodObjectsLevel1 {
-    position: absolute;
-    width: 2%;
-    height: 2%;
-    background-color: darkorange;
- 
-}
-
-.lastFoodElement {
-    position: absolute;
-    width: 3%;
-    height: 5%;
-    background-color: pink;
-}
-
-.new-frame {
-    background-image: url("./../images/game-background-two-mountains.jpg");
-    background-size: contain;
-    opacity: 0.7;
-    width: 80%;
-    height: 80%;
+.input-container {
     display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
+    justify-content: center;
     align-items: center;
-    border: solid 1px red;
+    width: 100%;
 }
 
-h2 {
+.input-container button {
+    background-color:rgb(99, 98, 98);
+    color: white;
+    font-size: 1.3em;
+    border-color: darkgray;;
+    border-radius: 7px;
+}
+
+#name-input-field {
+    margin: 0px 20px;
+    height: 10%;
     font-size: 2em;
-}
-
-h3 {
-    font-size: 2em;
-}
-
-ol {
-    margin: 10px auto;
-    font-size: 2em;
-}
-
-li {
-    font-size: 1em;
-    margin: 20px;
-}
-
-table {
+    padding: 30px;
     width: 30%;
-    text-align:left;
+    align-self: center;
+    border: 1px solid white;
+    border-radius: 10px;
+    outline: none;
+    font-weight: bold;
 }
 
-td {
-    margin: 5px 0px;
-    font-size: 1.5em;
-    font-weight: 800;
-}
+
+
+
