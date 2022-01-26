@@ -32,7 +32,7 @@ p {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    height: 30%;
+    height: 15%;
 }
 
 a {
@@ -54,6 +54,34 @@ a {
 #start-button-img {
     display: inline-block;
     width: 100%;
+}
+
+.input-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.input-container button {
+    background-color:rgb(99, 98, 98);
+    color: white;
+    font-size: 1.3em;
+    border-color: darkgray;;
+    border-radius: 7px;
+}
+
+#name-input-field {
+    margin: 0px 20px;
+    height: 10%;
+    font-size: 2em;
+    padding: 30px;
+    width: 30%;
+    align-self: center;
+    border: 1px solid white;
+    border-radius: 10px;
+    outline: none;
+    font-weight: bold;
 }
 
 
