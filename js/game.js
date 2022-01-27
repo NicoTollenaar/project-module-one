@@ -1,15 +1,17 @@
 class Game {
     constructor(levels){
         this.player = new Player();
-        this.levels = levels;
+        this.nameCurrentPlayer = "anonymous";
         this.currentLevel = 0;
-        this.levelTimeScores = [];
         this.foodElements = levels[this.currentLevel].foodElements;
-        this.orderedScores = {};
+        this.timeIntervalCounter = 0;
+        this.timeToFinishGame = 0;
+        this.orderedScores = [];
     }
 
     start () {
-        this.timeIntervalCounter = 0;
+        this.reset();
+        this.getNameCurrentPlayer();
         this.mainIntervalId = setInterval(()=> {
         this.timeIntervalCounter++;
         this.player.moveX();
@@ -22,6 +24,34 @@ class Game {
 
     stop() {
         clearInterval(this.mainIntervalId);
+        this.timeIntervalCounter = 0;
+    }
+
+    reset(){
+        this.timeIntervalCounter = 0;
+        this.timeToFinishGame = 0;
+        levels[this.currentLevel].foodObjects = JSON.parse(JSON.stringify(level1Parameters.foodObjects));
+        this.foodElements = levels[this.currentLevel].createFoodElements(levels[this.currentLevel].foodObjects);
+        this.player.positionX = this.player.startPositionX;
+        this.player.positionY = this.player.startPositionY;
+    }
+
+    getNameCurrentPlayer(){
+        if (localStorage.getItem("currentPlayer")) {
+            this.nameCurrentPlayer = localStorage.getItem("currentPlayer");
+            localStorage.removeItem("currentPlayer");
+        }
+
+        if (this.nameCurrentPlayer === "anonymous") {
+            for (let i = 0; i < localStorage.length; i++) {
+                if (localStorage.getItem(localStorage.key(i)) === "currentPlayer") {
+                    this.nameCurrentPlayer = localStorage.key(i);
+                    if (localStorage.key(i) === "") {
+                        this.nameCurrentPlayer = "Anonymous";
+                    }
+                }
+            }
+        }    
     }
 
     renderChangedElements(){
@@ -31,16 +61,31 @@ class Game {
         timeElement.innerText = `${this.getTime()}`;
     }
 
-    renderNextLevelPage(){
-        // let orderedScoresArray =  this.orderedScores[`level${level}`];
+    renderScorePage(){
+
+        // replace frame
         let frame = document.querySelector(".frame").style.display = "none";
         let newFrame = document.createElement("div");
         newFrame.className = "new-frame";
         document.body.appendChild(newFrame);
+
+        // insert div stating time scored
         let text = document.createElement("h2");
-        text.className = "questionNextLevelPage";
-        text.innerText = `Well done! Your time on level ${game.currentLevel} was: ${formatTime(this.timeIntervalCounter)}`;
+        text.className = "your-time-text";
+        text.innerText = `Well done! Your time was: ${formatTime(this.timeToFinishGame)}`;
         newFrame.appendChild(text);
+
+        // get and render scores and ranking of current player 
+        this.orderedScores = this.getOrderedScores();
+        let ranking = this.getRanking();
+        let rankingText = this.getRankingText(ranking);
+        let rankingTextElement = document.createElement("h4");
+        rankingTextElement.className = "ranking-text";
+        rankingTextElement.innerText = `${rankingText}`;
+        newFrame.appendChild(rankingTextElement);
+       
+
+        // header and table showing top 10 scores
         let scoresHeading = document.createElement("h3");
         scoresHeading.innerText = "Top 10 scores of all time:";
         newFrame.appendChild(scoresHeading);
@@ -48,17 +93,14 @@ class Game {
         newFrame.appendChild(table);
         let tableBody = document.createElement("tbody");
         table.appendChild(tableBody);
-        let orderedList = document.createElement("ol");
-        newFrame.appendChild(orderedList);
-        let orderedScoresArray = this.getOrderedScores();
         let name, time, html = "";
-        for (let i=0; i < orderedScoresArray.length; i++) {
-            if (orderedScoresArray[i].score == game.this)
+        console.log("In render score page function, logging this.orderedScores: ", this.orderedScores);
+        for (let i=0; i < this.orderedScores.length; i++) {
             if (i < 10) {
-                name = orderedScoresArray[i].name;
-                time = formatTime(orderedScoresArray[i].score);
+                name = this.orderedScores[i].name;
+                time = formatTime(this.orderedScores[i].score);
                 html += `
-                <tr>
+                <tr id="${i+1}">
                 <td>${i + 1}.</td>
                 <td>${name}</td>
                 <td>${time}</td>
@@ -66,13 +108,46 @@ class Game {
             }
         }
         tableBody.innerHTML = html;
+        if (ranking === -1) {
+            document.getElementById(`${1}`).style.color = "yellow";
+        } else if (ranking < 10) {
+            document.getElementById(`${ranking + 1}`).style.color = "yellow";
+        }
+
+        // insert play again button
+        let playAgainContainer = document.createElement("div");
+        playAgainContainer.className = "play-again-buttons-container";
+        newFrame.appendChild(playAgainContainer);
+        let playAgainButton = document.createElement("button");
+        playAgainButton.className = "play-again-button";
+        playAgainButton.innerText = "Play again";
+        playAgainContainer.appendChild(playAgainButton);
+        let stopButton = document.createElement("button");
+        stopButton.className = "stop-button";
+        stopButton.innerText = "Stop";
+        playAgainContainer.appendChild(stopButton);
+        playAgainButton.addEventListener("click", ()=>{
+            localStorage.setItem("currentPlayer", this.nameCurrentPlayer);
+            window.location.href = "./../html/game.html";
+        });
+
+        stopButton.addEventListener("click", ()=> {
+        window.location.href = "./../index.html";
+        });
     }
-    
+
+    returnToGamePage() {
+        document.querySelector(".new-frame").style.display = "none";
+        document.querySelector(".frame").style.display = "block";
+        startButton.style.display = "block";
+    }
+
     getOrderedScores() {
-        let level = this.currentLevel;
         let unorderedScores = [];
         for (let i = 0; i < localStorage.length; i++){
-            unorderedScores.push({name: `${localStorage.key(i)}`, score:JSON.parse(localStorage.getItem(localStorage.key(i)))});
+            if (Number(localStorage.getItem(localStorage.key(i)))) {
+                unorderedScores.push({name: `${localStorage.key(i)}`, score: JSON.parse(localStorage.getItem(localStorage.key(i)))});
+            }
         }
         return this.orderScores(unorderedScores);
     }
@@ -100,6 +175,33 @@ class Game {
         return array[lowestIndex];
     }
 
+    getRanking(){
+        let arrayScoresOnly = [];
+        let ranking = 0;
+        for (let i = 0; i < this.orderedScores.length; i++){
+            arrayScoresOnly[i] = this.orderedScores[i].score;
+        }
+        ranking = arrayScoresOnly.indexOf(this.timeToFinishGame);
+        console.log("In getRanking, logging ranking: ", ranking);
+        return ranking;
+    }
+
+    getRankingText(ranking){
+        let rankingText = "";
+        if (ranking > 9) {
+            rankingText = `Your current ranking is ${ranking}`;
+        } else if (ranking < 9 && ranking > 2){
+            rankingText = `You have made it into the top 10!`
+        } else if (ranking < 3 && ranking > 1) {
+            rankingText = `You have made it into the top 3!`
+        } else if (ranking === 0) {
+            rankingText = `You are the new top scorer!`
+        } else if (ranking === -1) {
+            rankingText = 'Oops, report error to game developer';
+        }
+        return rankingText;
+    }
+
     getTime(){
         return formatTime(this.timeIntervalCounter);
     }
@@ -114,8 +216,8 @@ class Game {
         this.randomFoodElement.style.display = "inline-block";
         if(this.foodElements.length === 1) {
             this.randomFoodElement.className = "lastFoodElement";
-            this.randomFoodElement.style.width = "2%";
-            this.randomFoodElement.style.height = "3%";
+            this.randomFoodElement.style.width = "3%";
+            this.randomFoodElement.style.height = "5%";
         }
     }
 
@@ -198,14 +300,15 @@ class Player {
         this.className = "player";
         this.domElement = this.createPlayerDomElement(this.width, this.height, this.className);
         this.keysPressed = {right: false, left: false, up: false};
-        this.positionX = 90;
-        this.positionY = 0;
+        this.startPositionX = 90;
+        this.startPositionY = 0;
+        this.positionX = this.startPositionX;
+        this.positionY = this.startPositionY;
         this.velocityX = 0;
         this.velocityY = 0;
         this.maxVelocity = 0.5;
         this.onSolidUnderground = true;
         this.health = 10;
-        this.timeIntervalCounts = [];
     }
 
     createPlayerDomElement(width, height, className){
@@ -347,25 +450,40 @@ class Player {
     detectFoodElementCollision() {
         let foodObjects = levels[game.currentLevel].foodObjects;
         foodObjects.forEach((foodObject, index)=> {
-        if (this.positionY < foodObject.positionY + foodObject.height &&
-            this.positionY + this.height > foodObject.positionY &&
-            this.positionX < foodObject.positionX + foodObject.width &&
-            this.positionX + this.width > foodObject.positionX){
-            game.removeFoodElement(index);
-            game.showNewFoodElement();
-            foodObjects.splice(index, 1);
-            if (foodObjects.length === 0) {
-                this.timeIntervalCounts.push(game.timeIntervalCounter);
-                game.stop();
-                for (let i = 0; i < localStorage.length; i++) {
-                    if (localStorage.getItem(localStorage.key(i)) == "currentPlayer") {
-                        localStorage.setItem(localStorage.key(i), JSON.stringify(this.timeIntervalCounts))
-                    }
-                }
-                game.renderNextLevelPage();
-            }
-            }
+            if (this.positionY < foodObject.positionY + foodObject.height &&
+                this.positionY + this.height > foodObject.positionY &&
+                this.positionX < foodObject.positionX + foodObject.width &&
+                this.positionX + this.width > foodObject.positionX){
+                game.removeFoodElement(index);
+                game.showNewFoodElement();
+                foodObjects.splice(index, 1);
+                if (foodObjects.length === 0) {
+                    game.timeToFinishGame = game.timeIntervalCounter;
+                    this.saveScoreToLocalStorage();
+                    game.stop();
+                    game.renderScorePage();
+                }      
+            } 
         });
+    }
+    
+    saveScoreToLocalStorage(){
+        console.log("In save to localstorage");
+        console.log("game.nameCurrentPLayer: ", game.nameCurrentPlayer);
+        console.log("localstorage.getItem(game.currentPlayer): ", localStorage.getItem(game.nameCurrentPlayer));
+        let oldName = game.nameCurrentPlayer;
+        let previousScore = localStorage.getItem(game.nameCurrentPlayer);
+        if (Number(previousScore)) {
+            game.nameCurrentPlayer +="*";
+            if (game.timeToFinishGame < previousScore) {
+                console.log("condition met: game.timetofinish < previousscore");
+                localStorage.setItem(oldName, JSON.stringify(game.timeToFinishGame));
+                localStorage.setItem(game.nameCurrentPlayer, previousScore);
+            }
+        } else { 
+            console.log("condition NOT met: game.timetofinish < previousscore")
+            localStorage.setItem(game.nameCurrentPlayer, JSON.stringify(game.timeToFinishGame));
+        }
     }
 }
 
@@ -402,9 +520,9 @@ const level1Parameters = {
 }
 
 const level2Parameters = {};
-const levelParameters = [level1Parameters, level2Parameters];
-const level1 = new Level(levelParameters[0]);
-const levels = [level1];
+const levelParameters = [JSON.parse(JSON.stringify(level1Parameters)), level2Parameters];
+let level1 = new Level(levelParameters[0]);
+let levels = [level1];
 const game = new Game(levels);
 
 let startButton = document.querySelector("#start-button");

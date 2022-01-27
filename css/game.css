@@ -35,7 +35,6 @@ body {
     position: relative;
     left: 35%;
     top: 30%;
-
 }
 
 #start-button-img {
@@ -116,15 +115,10 @@ h3 {
     font-size: 2em;
 }
 
-ol {
-    margin: 10px auto;
+h4.ranking-text {
     font-size: 2em;
 }
 
-li {
-    font-size: 1em;
-    margin: 20px;
-}
 
 table {
     width: 30%;
@@ -136,3 +130,21 @@ td {
     font-size: 1.5em;
     font-weight: 800;
 }
+
+
+
+.play-again-buttons-container {
+    display: flex;
+    justify-content: space-between;
+    /* border: 1px red solid; */
+    width: 30%;
+}
+
+.play-again-buttons-container button {
+    margin: 10px; 
+    font-size: 2em;
+    font-weight: 900;
+    padding: 10px 20px;
+    border-radius: 10px;
+}
+
