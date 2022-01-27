@@ -7,6 +7,8 @@ class Game {
         this.timeIntervalCounter = 0;
         this.timeToFinishGame = 0;
         this.orderedScores = [];
+        this.scoreImproved = false;
+        this.previousAttempt = false;
     }
 
     start () {
@@ -16,6 +18,7 @@ class Game {
         this.timeIntervalCounter++;
         this.player.moveX();
         this.player.moveY();
+        this.setPlayerImage();
         this.player.detectCollisions();
         this.renderChangedElements();
         }, 10);
@@ -57,9 +60,41 @@ class Game {
     renderChangedElements(){
         this.player.domElement.style.left = `${this.player.positionX}%`;
         this.player.domElement.style.bottom = `${this.player.positionY}%`;
+        let imageFileName = this.setPlayerImage();
+        this.player.ImageElement.src = `./../images/selection-red-hat/${imageFileName}`;
         let timeElement = document.querySelector("#time");
         timeElement.innerText = `${this.getTime()}`;
     }
+
+    // "./../images/selection-red-hat/Idle1-cropped-left.png";
+    // `${./../images/selection-red-hat/${this.setPlayerImage()}`;
+
+    setPlayerImage(){
+        let fileName = "Idle1-cropped-left.png";
+        let fileNumber = Math.floor(this.timeIntervalCounter / 2) % 9;
+        if (this.player.velocityY === 0 && Math.abs(this.player.velocityX) < 0.05) {
+            fileName = "Idle1-cropped-left.png";
+        } 
+        if (this.player.velocityY === 0 && this.player.velocityX <= -0.05) {
+            fileName = `Run-cropped-left-${fileNumber}.png`;
+        }
+        if (this.player.velocityY === 0 && this.player.velocityX >= 0.05) {
+            fileName = `Run-cropped-right-${fileNumber}.png`;
+        }
+        if (this.player.velocityY !== 0 && this.player.velocityX > 0) {
+            fileName = "Jump-cropped-right.png";
+        }
+        if (this.player.velocityY !== 0 && this.player.velocityX <= 0) {
+            fileName = "Jump-cropped-left.png";
+        }
+        // if (this.player.velocityY !== 0 && this.player.velocityX > 0) {
+        //     fileName = "Jump-cropped-right.png";
+        // }
+        // if (this.player.velocityY !== 0 && this.player.velocityX > 0) {
+        //     fileName = "Jump-cropped-right.png";
+        return fileName;
+    }
+
 
     renderScorePage(){
 
@@ -75,7 +110,10 @@ class Game {
         text.innerText = `Well done! Your time was: ${formatTime(this.timeToFinishGame)}`;
         newFrame.appendChild(text);
 
-        // get and render scores and ranking of current player 
+        // get and render scores and ranking of current player
+        if (!this.scoreImproved) {
+            this.timeToFinishGame = localStorage.getItem(game.nameCurrentPlayer);
+        } 
         this.orderedScores = this.getOrderedScores();
         let ranking = this.getRanking();
         let rankingText = this.getRankingText(ranking);
@@ -178,26 +216,45 @@ class Game {
     getRanking(){
         let arrayScoresOnly = [];
         let ranking = 0;
+        if (this.orderedScores.length === 0) {
+            console.log("In get ranking: this.orderedScores.length = :",this.orderedScores.length);
+        }
         for (let i = 0; i < this.orderedScores.length; i++){
             arrayScoresOnly[i] = this.orderedScores[i].score;
+            if (arrayScoresOnly[i] == this.timeToFinishGame) {
+                ranking = i;
+                console.log("Ranking in for loop ", ranking);
+                return ranking;
+            }
         }
-        ranking = arrayScoresOnly.indexOf(this.timeToFinishGame);
-        console.log("In getRanking, logging ranking: ", ranking);
+
+        console.log("In get ranking, logging arrayScoresOnly and this.timeToFinish: ", arrayScoresOnly, this.timeToFinishGame);
+        // ranking = arrayScoresOnly.indexOf(this.timeToFinishGame);
+        ranking = -1;
+        console.log("In getRanking outside for loop, logging ranking: ", ranking);
         return ranking;
     }
 
     getRankingText(ranking){
         let rankingText = "";
-        if (ranking > 9) {
-            rankingText = `Your current ranking is ${ranking}`;
-        } else if (ranking < 9 && ranking > 2){
-            rankingText = `You have made it into the top 10!`
-        } else if (ranking < 3 && ranking > 1) {
-            rankingText = `You have made it into the top 3!`
-        } else if (ranking === 0) {
-            rankingText = `You are the new top scorer!`
-        } else if (ranking === -1) {
-            rankingText = 'Oops, report error to game developer';
+        if (this.previousAttempt) {
+            if (!this.scoreImproved) {
+                rankingText = "But, bad luck, you did not improve your previous score"; 
+            } else {
+                rankingText = `You beat your previous score. Your new ranking is ${ranking + 1}!`
+            }
+        } else {
+            if (ranking > 9) {
+                rankingText = `Your current ranking is ${ranking}`;
+            } else if (ranking < 9 && ranking > 2){
+                rankingText = `You have made it into the top 10!`
+            } else if (ranking < 3 && ranking > 1) {
+                rankingText = `You have made it into the top 3!`
+            } else if (ranking === 0) {
+                rankingText = `You are the new top scorer!`
+            } else if (ranking === -1) {
+                rankingText = 'Oops, report error to game developer';
+            }
         }
         return rankingText;
     }
@@ -299,8 +356,9 @@ class Player {
         this.width = 2;
         this.className = "player";
         this.domElement = this.createPlayerDomElement(this.width, this.height, this.className);
+        this.ImageElement = document.getElementById("player-image");
         this.keysPressed = {right: false, left: false, up: false};
-        this.startPositionX = 90;
+        this.startPositionX = 50;
         this.startPositionY = 0;
         this.positionX = this.startPositionX;
         this.positionY = this.startPositionY;
@@ -471,18 +529,23 @@ class Player {
         console.log("In save to localstorage");
         console.log("game.nameCurrentPLayer: ", game.nameCurrentPlayer);
         console.log("localstorage.getItem(game.currentPlayer): ", localStorage.getItem(game.nameCurrentPlayer));
-        let oldName = game.nameCurrentPlayer;
+        // let oldName = game.nameCurrentPlayer;
         let previousScore = localStorage.getItem(game.nameCurrentPlayer);
         if (Number(previousScore)) {
-            game.nameCurrentPlayer +="*";
+            // game.nameCurrentPlayer +="*";
+            game.previousAttempt = true;
             if (game.timeToFinishGame < previousScore) {
+                game.scoreImproved = true;
                 console.log("condition met: game.timetofinish < previousscore");
-                localStorage.setItem(oldName, JSON.stringify(game.timeToFinishGame));
-                localStorage.setItem(game.nameCurrentPlayer, previousScore);
+                localStorage.setItem(game.nameCurrentPlayer, game.timeToFinishGame);
+            } else {
+                this.scoreImproved = false;
+                // game.timeToFinishGame = previousScore;
+                // localStorage.setItem(game.nameCurrentPlayer, previousScore);
+                console.log("condition NOT met: game.timetofinish > previousscore");            
             }
         } else { 
-            console.log("condition NOT met: game.timetofinish < previousscore")
-            localStorage.setItem(game.nameCurrentPlayer, JSON.stringify(game.timeToFinishGame));
+            localStorage.setItem(game.nameCurrentPlayer, game.timeToFinishGame);
         }
     }
 }
@@ -503,17 +566,17 @@ const level1Parameters = {
         // {positionX: 85, positionY: 15, width: 15, height: 10, className: "fatalObjectsLevel1"}
     ],
     foodObjects: [
-        // {positionX: 1, positionY: 70, width: 1, height: 3, className: "foodObjectsLevel1"},
-        // {positionX: 1, positionY: 30, width: 1, height: 3, className: "foodObjectsLevel1"}
+        {positionX: 1, positionY: 70, width: 1, height: 3, className: "foodObjectsLevel1"},
+        {positionX: 1, positionY: 30, width: 1, height: 3, className: "foodObjectsLevel1"},
         {positionX: 98, positionY: 25, width: 1, height: 3, className: "foodObjectsLevel1"},
-        {positionX: 98, positionY: 45, width: 1, height: 3, className: "foodObjectsLevel1"}
-        // {positionX: 61, positionY: 0, width: 1, height: 3, className: "foodObjectsLevel1"},
-        // {positionX: 61, positionY: 0, width: 1, height: 3, className: "foodObjectsLevel1"},
-        // {positionX: 61, positionY: 25, width: 1, height: 3, className: "foodObjectsLevel1"},
-        // {positionX: 61, positionY: 25, width: 1, height: 3, className: "foodObjectsLevel1"},
-        // {positionX: 35, positionY: 45, width: 1, height: 3, className: "foodObjectsLevel1"},
-        // {positionX: 67, positionY: 70, width: 1, height: 3, className: "foodObjectsLevel1"},
-        // {positionX: 98, positionY: 0, width: 1, height: 3, className: "foodObjectsLevel1"},
+        {positionX: 98, positionY: 45, width: 1, height: 3, className: "foodObjectsLevel1"},
+        {positionX: 61, positionY: 0, width: 1, height: 3, className: "foodObjectsLevel1"},
+        {positionX: 61, positionY: 0, width: 1, height: 3, className: "foodObjectsLevel1"},
+        {positionX: 61, positionY: 25, width: 1, height: 3, className: "foodObjectsLevel1"},
+        {positionX: 61, positionY: 25, width: 1, height: 3, className: "foodObjectsLevel1"},
+        {positionX: 35, positionY: 45, width: 1, height: 3, className: "foodObjectsLevel1"},
+        {positionX: 67, positionY: 70, width: 1, height: 3, className: "foodObjectsLevel1"},
+        {positionX: 98, positionY: 0, width: 1, height: 3, className: "foodObjectsLevel1"}
     ],
     sound: [],
     otherAttributes: {}
