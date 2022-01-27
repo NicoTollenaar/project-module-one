@@ -40,21 +40,34 @@ class Game {
     }
 
     getNameCurrentPlayer(){
+        console.log("In getNameCurrentPLayer, beginning, logging localstorage, this.nameCurrentPLayer ", localStorage);
+        console.log("Same place, logging this.nameCurrentPlayer: ", this.nameCurrentPlayer);
         if (localStorage.getItem("currentPlayer")) {
             this.nameCurrentPlayer = localStorage.getItem("currentPlayer");
+            console.log("In getNameCurrentPLayer, if statement key currentPlayer (retry), logging localstorage before remove, ", localStorage);
+            console.log("Same place, logging this.nameCurrentPlayer after remove: ", this.nameCurrentPlayer);
             localStorage.removeItem("currentPlayer");
-        }
+            console.log("In getNameCurrentPLayer, if statement key currentPlayer (retry), logging localstorage after remove, ", localStorage);
+            console.log("Same place, logging this.nameCurrentPlayer after remove: ", this.nameCurrentPlayer);
 
+        }
         if (this.nameCurrentPlayer === "anonymous") {
+            console.log("In getNameCurrentPLayer, if statement nameCurrent == anonymous (constructor), logging localstorage (before loop): ", localStorage);
+            console.log("Same place, logging: ", this.nameCurrentPlayer);
             for (let i = 0; i < localStorage.length; i++) {
                 if (localStorage.getItem(localStorage.key(i)) === "currentPlayer") {
                     this.nameCurrentPlayer = localStorage.key(i);
                     if (localStorage.key(i) === "") {
                         this.nameCurrentPlayer = "Anonymous";
+                        localStorage.removeItem(localStorage.key(i));
+                        localStorage.setItem("Anonymous", "currentPlayer");
                     }
                 }
             }
-        }    
+        }
+
+        console.log("In getNameCurrentPLayer, END, logging localstorage, ", localStorage);
+        console.log("Same place, logging this.nameCurrentPlayer: ", this.nameCurrentPlayer);
     }
 
     renderChangedElements(){
@@ -132,7 +145,7 @@ class Game {
         let tableBody = document.createElement("tbody");
         table.appendChild(tableBody);
         let name, time, html = "";
-        console.log("In render score page function, logging this.orderedScores: ", this.orderedScores);
+        // console.log("In render score page function, logging this.orderedScores: ", this.orderedScores);
         for (let i=0; i < this.orderedScores.length; i++) {
             if (i < 10) {
                 name = this.orderedScores[i].name;
@@ -168,7 +181,6 @@ class Game {
             localStorage.setItem("currentPlayer", this.nameCurrentPlayer);
             window.location.href = "./../html/game.html";
         });
-
         stopButton.addEventListener("click", ()=> {
         window.location.href = "./../index.html";
         });
@@ -217,21 +229,21 @@ class Game {
         let arrayScoresOnly = [];
         let ranking = 0;
         if (this.orderedScores.length === 0) {
-            console.log("In get ranking: this.orderedScores.length = :",this.orderedScores.length);
+            // console.log("In get ranking: this.orderedScores.length = :",this.orderedScores.length);
         }
         for (let i = 0; i < this.orderedScores.length; i++){
             arrayScoresOnly[i] = this.orderedScores[i].score;
             if (arrayScoresOnly[i] == this.timeToFinishGame) {
                 ranking = i;
-                console.log("Ranking in for loop ", ranking);
+                // console.log("Ranking in for loop ", ranking);
                 return ranking;
             }
         }
 
-        console.log("In get ranking, logging arrayScoresOnly and this.timeToFinish: ", arrayScoresOnly, this.timeToFinishGame);
+        // console.log("In get ranking, logging arrayScoresOnly and this.timeToFinish: ", arrayScoresOnly, this.timeToFinishGame);
         // ranking = arrayScoresOnly.indexOf(this.timeToFinishGame);
         ranking = -1;
-        console.log("In getRanking outside for loop, logging ranking: ", ranking);
+        // console.log("In getRanking outside for loop, logging ranking: ", ranking);
         return ranking;
     }
 
@@ -265,7 +277,7 @@ class Game {
 
     showNewFoodElement() {     
         if (this.foodElements.length === 0) {
-            console.log("No more foodElements left to show!");
+            // console.log("No more foodElements left to show!");
             return;
         }
         this.randomFoodIndex = Math.floor(Math.random()*this.foodElements.length);
@@ -526,9 +538,9 @@ class Player {
     }
     
     saveScoreToLocalStorage(){
-        console.log("In save to localstorage");
-        console.log("game.nameCurrentPLayer: ", game.nameCurrentPlayer);
-        console.log("localstorage.getItem(game.currentPlayer): ", localStorage.getItem(game.nameCurrentPlayer));
+        // console.log("In save to localstorage");
+        // console.log("game.nameCurrentPLayer: ", game.nameCurrentPlayer);
+        // console.log("localstorage.getItem(game.currentPlayer): ", localStorage.getItem(game.nameCurrentPlayer));
         // let oldName = game.nameCurrentPlayer;
         let previousScore = localStorage.getItem(game.nameCurrentPlayer);
         if (Number(previousScore)) {
@@ -536,13 +548,13 @@ class Player {
             game.previousAttempt = true;
             if (game.timeToFinishGame < previousScore) {
                 game.scoreImproved = true;
-                console.log("condition met: game.timetofinish < previousscore");
+                // console.log("condition met: game.timetofinish < previousscore");
                 localStorage.setItem(game.nameCurrentPlayer, game.timeToFinishGame);
             } else {
                 this.scoreImproved = false;
                 // game.timeToFinishGame = previousScore;
                 // localStorage.setItem(game.nameCurrentPlayer, previousScore);
-                console.log("condition NOT met: game.timetofinish > previousscore");            
+                // console.log("condition NOT met: game.timetofinish > previousscore");            
             }
         } else { 
             localStorage.setItem(game.nameCurrentPlayer, game.timeToFinishGame);
@@ -566,17 +578,16 @@ const level1Parameters = {
         // {positionX: 85, positionY: 15, width: 15, height: 10, className: "fatalObjectsLevel1"}
     ],
     foodObjects: [
-        {positionX: 1, positionY: 70, width: 1, height: 3, className: "foodObjectsLevel1"},
-        {positionX: 1, positionY: 30, width: 1, height: 3, className: "foodObjectsLevel1"},
-        {positionX: 98, positionY: 25, width: 1, height: 3, className: "foodObjectsLevel1"},
-        {positionX: 98, positionY: 45, width: 1, height: 3, className: "foodObjectsLevel1"},
+        // {positionX: 1, positionY: 70, width: 1, height: 3, className: "foodObjectsLevel1"},
+        // {positionX: 1, positionY: 30, width: 1, height: 3, className: "foodObjectsLevel1"},
+        // {positionX: 98, positionY: 25, width: 1, height: 3, className: "foodObjectsLevel1"},
+        // {positionX: 98, positionY: 45, width: 1, height: 3, className: "foodObjectsLevel1"},
         {positionX: 61, positionY: 0, width: 1, height: 3, className: "foodObjectsLevel1"},
-        {positionX: 61, positionY: 0, width: 1, height: 3, className: "foodObjectsLevel1"},
-        {positionX: 61, positionY: 25, width: 1, height: 3, className: "foodObjectsLevel1"},
-        {positionX: 61, positionY: 25, width: 1, height: 3, className: "foodObjectsLevel1"},
-        {positionX: 35, positionY: 45, width: 1, height: 3, className: "foodObjectsLevel1"},
-        {positionX: 67, positionY: 70, width: 1, height: 3, className: "foodObjectsLevel1"},
-        {positionX: 98, positionY: 0, width: 1, height: 3, className: "foodObjectsLevel1"}
+        {positionX: 61, positionY: 25, width: 1, height: 3, className: "foodObjectsLevel1"}
+        // {positionX: 61, positionY: 25, width: 1, height: 3, className: "foodObjectsLevel1"},
+        // {positionX: 35, positionY: 45, width: 1, height: 3, className: "foodObjectsLevel1"},
+        // {positionX: 67, positionY: 70, width: 1, height: 3, className: "foodObjectsLevel1"},
+        // {positionX: 98, positionY: 0, width: 1, height: 3, className: "foodObjectsLevel1"}
     ],
     sound: [],
     otherAttributes: {}
