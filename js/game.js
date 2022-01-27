@@ -1,7 +1,7 @@
 class Game {
     constructor(levels){
         this.player = new Player();
-        this.nameCurrentPlayer = "anonymous";
+        this.nameCurrentPlayer = "Anonymous";
         this.currentLevel = 0;
         this.foodElements = levels[this.currentLevel].foodElements;
         this.timeIntervalCounter = 0;
@@ -51,7 +51,7 @@ class Game {
             console.log("Same place, logging this.nameCurrentPlayer after remove: ", this.nameCurrentPlayer);
 
         }
-        if (this.nameCurrentPlayer === "anonymous") {
+        if (this.nameCurrentPlayer === "Anonymous") {
             console.log("In getNameCurrentPLayer, if statement nameCurrent == anonymous (constructor), logging localstorage (before loop): ", localStorage);
             console.log("Same place, logging: ", this.nameCurrentPlayer);
             for (let i = 0; i < localStorage.length; i++) {
@@ -84,7 +84,7 @@ class Game {
 
     setPlayerImage(){
         let fileName = "Idle1-cropped-left.png";
-        let fileNumber = Math.floor(this.timeIntervalCounter / 2) % 9;
+        let fileNumber = 1 + Math.floor(this.timeIntervalCounter / 2) % 8;
         if (this.player.velocityY === 0 && Math.abs(this.player.velocityX) < 0.05) {
             fileName = "Idle1-cropped-left.png";
         } 
@@ -100,11 +100,15 @@ class Game {
         if (this.player.velocityY !== 0 && this.player.velocityX <= 0) {
             fileName = "Jump-cropped-left.png";
         }
-        // if (this.player.velocityY !== 0 && this.player.velocityX > 0) {
-        //     fileName = "Jump-cropped-right.png";
-        // }
-        // if (this.player.velocityY !== 0 && this.player.velocityX > 0) {
-        //     fileName = "Jump-cropped-right.png";
+        if (this.player.onSolidUnderground && 
+            this.player.keysPressed.right === false 
+            && this.player.keysPressed.left === false) {
+                if (this.player.velocityX >= 0.01) {
+                    fileName = "Slide-cropped-right.png";
+                } else if (this.player.velocityX <= -0.01) {
+                    fileName = "Slide-cropped-left.png";
+                }
+            }
         return fileName;
     }
 
@@ -120,7 +124,7 @@ class Game {
         // insert div stating time scored
         let text = document.createElement("h2");
         text.className = "your-time-text";
-        text.innerText = `Well done! Your time was: ${formatTime(this.timeToFinishGame)}`;
+        text.innerHTML = `Well done! Your time was: <span>${formatTime(this.timeToFinishGame)}</span>`;
         newFrame.appendChild(text);
 
         // get and render scores and ranking of current player
@@ -145,7 +149,6 @@ class Game {
         let tableBody = document.createElement("tbody");
         table.appendChild(tableBody);
         let name, time, html = "";
-        // console.log("In render score page function, logging this.orderedScores: ", this.orderedScores);
         for (let i=0; i < this.orderedScores.length; i++) {
             if (i < 10) {
                 name = this.orderedScores[i].name;
@@ -171,7 +174,7 @@ class Game {
         newFrame.appendChild(playAgainContainer);
         let playAgainButton = document.createElement("button");
         playAgainButton.className = "play-again-button";
-        playAgainButton.innerText = "Play again";
+        playAgainButton.innerText = "Try again";
         playAgainContainer.appendChild(playAgainButton);
         let stopButton = document.createElement("button");
         stopButton.className = "stop-button";
@@ -257,7 +260,7 @@ class Game {
             }
         } else {
             if (ranking > 9) {
-                rankingText = `Your current ranking is ${ranking}`;
+                rankingText = `Your current ranking is ${ranking + 1}`;
             } else if (ranking < 9 && ranking > 2){
                 rankingText = `You have made it into the top 10!`
             } else if (ranking < 3 && ranking > 1) {
@@ -277,7 +280,6 @@ class Game {
 
     showNewFoodElement() {     
         if (this.foodElements.length === 0) {
-            // console.log("No more foodElements left to show!");
             return;
         }
         this.randomFoodIndex = Math.floor(Math.random()*this.foodElements.length);
@@ -285,10 +287,13 @@ class Game {
         this.randomFoodElement.style.display = "inline-block";
         if(this.foodElements.length === 1) {
             this.randomFoodElement.className = "lastFoodElement";
+            this.randomFoodElement.src = "./../images/gold-chest.png";
             this.randomFoodElement.style.width = "3%";
             this.randomFoodElement.style.height = "5%";
         }
     }
+
+
 
     removeFoodElement(index){
         if (this.foodElements[index]) {
@@ -348,7 +353,8 @@ class Level {
         let foodElements = [];
         let foodElement;
         this.foodObjects.forEach((foodObject)=>{
-            foodElement = document.createElement("div");
+            foodElement = document.createElement("img");
+            foodElement.src = `./../images/apple.png`;
             foodElement.className = `${foodObject.className}`;
             foodElement.style.left = `${foodObject.positionX}%`;
             foodElement.style.bottom = `${foodObject.positionY}%`;
@@ -524,6 +530,7 @@ class Player {
                 this.positionY + this.height > foodObject.positionY &&
                 this.positionX < foodObject.positionX + foodObject.width &&
                 this.positionX + this.width > foodObject.positionX){
+                eatSound.play();
                 game.removeFoodElement(index);
                 game.showNewFoodElement();
                 foodObjects.splice(index, 1);
@@ -538,23 +545,14 @@ class Player {
     }
     
     saveScoreToLocalStorage(){
-        // console.log("In save to localstorage");
-        // console.log("game.nameCurrentPLayer: ", game.nameCurrentPlayer);
-        // console.log("localstorage.getItem(game.currentPlayer): ", localStorage.getItem(game.nameCurrentPlayer));
-        // let oldName = game.nameCurrentPlayer;
         let previousScore = localStorage.getItem(game.nameCurrentPlayer);
         if (Number(previousScore)) {
-            // game.nameCurrentPlayer +="*";
             game.previousAttempt = true;
             if (game.timeToFinishGame < previousScore) {
                 game.scoreImproved = true;
-                // console.log("condition met: game.timetofinish < previousscore");
                 localStorage.setItem(game.nameCurrentPlayer, game.timeToFinishGame);
             } else {
                 this.scoreImproved = false;
-                // game.timeToFinishGame = previousScore;
-                // localStorage.setItem(game.nameCurrentPlayer, previousScore);
-                // console.log("condition NOT met: game.timetofinish > previousscore");            
             }
         } else { 
             localStorage.setItem(game.nameCurrentPlayer, game.timeToFinishGame);
@@ -578,10 +576,10 @@ const level1Parameters = {
         // {positionX: 85, positionY: 15, width: 15, height: 10, className: "fatalObjectsLevel1"}
     ],
     foodObjects: [
-        // {positionX: 1, positionY: 70, width: 1, height: 3, className: "foodObjectsLevel1"},
-        // {positionX: 1, positionY: 30, width: 1, height: 3, className: "foodObjectsLevel1"},
-        // {positionX: 98, positionY: 25, width: 1, height: 3, className: "foodObjectsLevel1"},
-        // {positionX: 98, positionY: 45, width: 1, height: 3, className: "foodObjectsLevel1"},
+        {positionX: 1, positionY: 70, width: 1, height: 3, className: "foodObjectsLevel1"},
+        {positionX: 1, positionY: 30, width: 1, height: 3, className: "foodObjectsLevel1"},
+        {positionX: 98, positionY: 25, width: 1, height: 3, className: "foodObjectsLevel1"},
+        {positionX: 98, positionY: 45, width: 1, height: 3, className: "foodObjectsLevel1"},
         {positionX: 61, positionY: 0, width: 1, height: 3, className: "foodObjectsLevel1"},
         {positionX: 61, positionY: 25, width: 1, height: 3, className: "foodObjectsLevel1"}
         // {positionX: 61, positionY: 25, width: 1, height: 3, className: "foodObjectsLevel1"},
@@ -597,6 +595,8 @@ const level2Parameters = {};
 const levelParameters = [JSON.parse(JSON.stringify(level1Parameters)), level2Parameters];
 let level1 = new Level(levelParameters[0]);
 let levels = [level1];
+let audioJump = new Audio("./../music-and-sounds/Kris Kross - Jump (Official Video) (1).mp3");
+let eatSound = new Audio("./../music-and-sounds/eat-sound.wav");
 const game = new Game(levels);
 
 let startButton = document.querySelector("#start-button");
@@ -604,6 +604,14 @@ startButton.addEventListener("click", ()=> {
     game.start();
     startButton.style.display = "none";
 });
+
+audioJump.addEventListener("canplaythrough", event => {
+    startButton.addEventListener("click", ()=>{
+        audioJump.play();
+    });
+});
+
+
 
 function getMinutes(milliseconds) {
     return Math.floor((milliseconds / 100) / 60); 
