@@ -23,11 +23,15 @@ body {
     justify-content: flex-end;
     align-items: baseline;
     margin: 10px 20px;
+    font-weight: 800;
+    color: red;
 }
 
 #time {
-    font-size: 1.5em;
+    font-size: 1.6em;
     margin: 5px;
+    font-weight: 900;
+    color: red;
 }
 
 #start-button {
