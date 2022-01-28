@@ -15,6 +15,7 @@ class Game {
         this.reset();
         this.getNameCurrentPlayer();
         this.mainIntervalId = setInterval(()=> {
+        // console.log(this.player.keysPressed);
         this.timeIntervalCounter++;
         this.player.moveX();
         this.player.moveY();
@@ -65,7 +66,6 @@ class Game {
                 }
             }
         }
-
         console.log("In getNameCurrentPLayer, END, logging localstorage, ", localStorage);
         console.log("Same place, logging this.nameCurrentPlayer: ", this.nameCurrentPlayer);
     }
@@ -78,9 +78,6 @@ class Game {
         let timeElement = document.querySelector("#time");
         timeElement.innerText = `${this.getTime()}`;
     }
-
-    // "./../images/selection-red-hat/Idle1-cropped-left.png";
-    // `${./../images/selection-red-hat/${this.setPlayerImage()}`;
 
     setPlayerImage(){
         let fileName = "Idle1-cropped-left.png";
@@ -375,14 +372,14 @@ class Player {
         this.className = "player";
         this.domElement = this.createPlayerDomElement(this.width, this.height, this.className);
         this.ImageElement = document.getElementById("player-image");
-        this.keysPressed = {right: false, left: false, up: false};
+        this.keysPressed = {right: false, left: false, up: false, turbo: false};
         this.startPositionX = 50;
         this.startPositionY = 0;
         this.positionX = this.startPositionX;
         this.positionY = this.startPositionY;
         this.velocityX = 0;
         this.velocityY = 0;
-        this.maxVelocity = 0.5;
+        this.maxVelocity = 0.4;
         this.onSolidUnderground = true;
         this.health = 10;
     }
@@ -395,15 +392,38 @@ class Player {
         return playerDomElement;
     }
 
+    getMaxVelocity() {
+        if (this.keysPressed.turbo) {
+            this.maxVelocity = 0.45;
+        } else if (!this.keysPressed.turbo) {
+            this.maxVelocity = 0.35;
+        }
+        return this.maxVelocity;
+    }
+
     moveX() {
+        console.log("this.maxVelocity: ", this.maxVelocity);
+        this.maxVelocity = this.getMaxVelocity();
         this.checkOnSolidUnderground();
         if (this.keysPressed.right === true && this.keysPressed.left === false) {
             if (this.onSolidUnderground && Math.abs(this.velocityX) <= this.maxVelocity) {
-                this.velocityX += 0.03;
+                // this.velocityX += 0.03;
+                if (this.keysPressed.turbo) {
+                    console.log("in if statement this.keysPressed.turbo === true, ", this.keysPressed);
+                    this.velocityX += 0.04;
+                } else if (!this.keysPressed.turbo) {
+                    this.velocityX += 0.01;
+                }
             }
         } else if (this.keysPressed.left === true && this.keysPressed.right === false) {
             if (this.onSolidUnderground && Math.abs(this.velocityX) <= this.maxVelocity) {
-                this.velocityX -= 0.03;
+                if (this.keysPressed.turbo) {
+                    console.log("in if statement this.keysPressed.turbo === true, ", this.keysPressed);
+                    this.velocityX += -0.04;
+                } else if (!this.keysPressed.turbo) {
+                    this.velocityX += -0.01;
+                }
+                // this.velocityX += - 0.03;
             }
         } else if (this.keysPressed.left === false && this.keysPressed.right === false) {
             this.velocityX *= 0.9;
@@ -414,7 +434,12 @@ class Player {
     moveY() {
         this.checkOnSolidUnderground();
         if (this.keysPressed.up === true && this.onSolidUnderground) {
-              this.velocityY = 1.8;
+            if (this.keysPressed.turbo) {
+                console.log("in if statement this.keysPressed.turbo === true, ", this.keysPressed);
+                this.velocityY = 1.8;
+            } else if (!this.keysPressed.turbo) {
+                this.velocityY = 1.6;
+            }
         } else if (this.positionY > 0 && this.onSolidUnderground === false) {
             this.velocityY -= 0.05;
         } else if (this.positionY <= 0) {
@@ -422,7 +447,6 @@ class Player {
             this.velocityY = 0;
         }
         this.positionY += this.velocityY;
-        
     }
 
     detectCollisions(){
@@ -607,7 +631,7 @@ startButton.addEventListener("click", ()=> {
 
 audioJump.addEventListener("canplaythrough", event => {
     startButton.addEventListener("click", ()=>{
-        audioJump.play();
+        // audioJump.play();
     });
 });
 
@@ -653,35 +677,42 @@ function computeTwoDigitNumber(value) {
   }
 
 window.addEventListener("keydown", (e)=>{
-    if (e.key === "w") {
-    }
-})
-
-window.addEventListener("keydown", (e)=>{
-    if (e.key === "ArrowRight") {
+    if (e.key === "ArrowRight" || e.key === "d") {
         game.player.keysPressed.right = true;
-    } else if (e.key === "ArrowLeft") {
+    } else if (e.key === "ArrowLeft" || e.key === "a") {
         game.player.keysPressed.left = true;
     }
 });
 
 window.addEventListener("keyup", (e)=>{
-    if (e.key === "ArrowRight") {
+    if (e.key === "ArrowRight" || e.key === "d") {
         game.player.keysPressed.right = false;
-    } else if (e.key === "ArrowLeft") {
+    } else if (e.key === "ArrowLeft" || e.key === "a") {
         game.player.keysPressed.left = false;
     }
 });
 
 window.addEventListener("keydown", (e)=>{
-    if (e.key === "ArrowUp") {
+    if (e.key === "ArrowUp" || e.key === "w") {
         game.player.keysPressed.up = true;
     }
 });
 
 window.addEventListener("keyup", (e)=>{
-    if (e.key === "ArrowUp") {
+    if (e.key === "ArrowUp" || e.key === "w") {
         game.player.keysPressed.up = false;
+    }
+});
+
+window.addEventListener("keydown", (e)=>{
+    if (e.key === " ") {
+        game.player.keysPressed.turbo = true;
+    }
+});
+
+window.addEventListener("keyup", (e)=>{
+    if (e.key === " ") {
+        game.player.keysPressed.turbo = false;
     }
 });
 
