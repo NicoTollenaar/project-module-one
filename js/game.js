@@ -631,7 +631,7 @@ startButton.addEventListener("click", ()=> {
 
 audioJump.addEventListener("canplaythrough", event => {
     startButton.addEventListener("click", ()=>{
-        // audioJump.play();
+        audioJump.play();
     });
 });
 
