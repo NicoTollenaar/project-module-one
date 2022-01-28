@@ -1,4 +1,4 @@
-jumpJump!
+"Jump Jump!"
 
 This game was created as a project for module one of the Ironhack webdevelopment bootcamp cohort January 2022
 
